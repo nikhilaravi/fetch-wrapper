@@ -1,0 +1,24 @@
+{
+  "name": "fetch-wrapper",
+  "version": "1.0.0",
+  "description": "Wrapper around isomorphic-fetch to retry the request if there is an error",
+  "main": "index.js",
+  "scripts": {
+    "test": "What tests?"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nikhilaravi/fetch-wrapper.git"
+  },
+  "keywords": [
+    "fetch",
+    "react-native",
+    "request"
+  ],
+  "author": "nikhilaravi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nikhilaravi/fetch-wrapper/issues"
+  },
+  "homepage": "https://github.com/nikhilaravi/fetch-wrapper#readme"
+}
