@@ -44,7 +44,6 @@ test('fetch-wrapper => 200 success on third request attempt', t => {
   nock('http://localhost:8000').get('/ok').once().reply(400);
   nock('http://localhost:8000').get('/ok').twice().reply(400);
   nock('http://localhost:8000').get('/ok').thrice().reply(200, 'ok');
-  nock('http://localhost:8000').get('/ok').thrice().reply(200, 'ok');
 
   sendRequest({
     request: getReq('http://localhost:8000/ok'),
