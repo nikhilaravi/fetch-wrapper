@@ -4,7 +4,7 @@
   "description": "Wrapper around isomorphic-fetch to retry the request if there is an error",
   "main": "index.js",
   "scripts": {
-    "test": "What tests?"
+    "test": "tape test/runner.js"
   },
   "repository": {
     "type": "git",
@@ -15,10 +15,20 @@
     "react-native",
     "request"
   ],
+  "devDependencies": {
+    "babel-core": "^6.3.17",
+    "babel-plugin-transform-object-rest-spread": "^6.1.18",
+    "babel-preset-es2015": "^6.1.18",
+    "nock": "^5.2.1",
+    "tape": "^4.2.2"
+  },
   "author": "nikhilaravi",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/nikhilaravi/fetch-wrapper/issues"
   },
-  "homepage": "https://github.com/nikhilaravi/fetch-wrapper#readme"
+  "homepage": "https://github.com/nikhilaravi/fetch-wrapper#readme",
+  "dependencies": {
+    "isomorphic-fetch": "^2.2.1"
+  }
 }
