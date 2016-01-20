@@ -11,6 +11,7 @@ The promise returned by fetch is then resolved in the fetch wrapper (fetch-wrapp
 
 ## Request wrapper
 
+```js
 /**
 * Wrapper around the fetch request to retry the request if there is an error
 * @param {object} - options
@@ -19,37 +20,25 @@ The promise returned by fetch is then resolved in the fetch wrapper (fetch-wrapp
 *  - onError(error): function to be called when there is an error in the fetch request
 *  - responseType: string ('json' or 'text')
 * @param {number} - attempt (defaults to zero)
-**/
-
-/**
-.then(onSuccess, onFail)
-.catch(onError)
-- When the fetch promise is resolved with a fetch response,
-and the onSuccess handler throws an exception while handling the response,
-the onFail function is not invoked, but the catch handler is
-- use the onFail function to deal with fetch network errors, and use the catch handler to deal with rendering errors
-
-/**
-* Error handling for fetch request
-*
-* If the number of attempts is less that the number of retryIntervals
-* the request is sent again
-* @param {object} - request options object
-* @param {number} - attempt
-* @param {string} - error from fetch request
-*
-**/
 
 
  TODO:
  - optional timeout parameter to terminate the request
+
 **/
-
-/**
-* If there is an error in the fetch request
-* it is re-sent at the intervals defined below.
-**/
-
-
+```
 
 ## Example usage
+
+```js
+/**
+  EXAMPLE USAGE
+
+  sendRequest({
+    request: postReq('localhost:9009/login', {name: 'name'}), //this should be a function that returns a fetch request
+    responseType: 'json'
+    onSuccess: json => {},
+    onError: (error) => {}
+  })
+**/
+```
