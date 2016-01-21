@@ -1,6 +1,37 @@
 # fetch-wrapper
 Wrapper around isomorphic-fetch for resending fetch request if there is an error.
 
+[![NPM](https://nodei.co/npm-dl/react-native-smart-scroll-view.png?months=3)](https://nodei.co/npm/fetch-wrapper/)
+
+## Getting Started
+
+- [Installation](#installation)
+- [Request Wrapper](#request-wrapper)
+- [Request Creator Helpers](#request-creator-helpers)
+- [Example Usage](#example-usage)
+- [Credits](#credits)
+
+### Installation
+
+```bash
+$ npm i fetch-wrapper --save
+
+```
+
+To run the tests first clone the repo:
+
+```bash
+$ git clone https://github.com/nikhilaravi/fetch-wrapper.git
+
+```
+
+Run the tests:
+
+```bash
+$ npm test
+
+```
+
 ## Request wrapper
 
 The `sendRequest` function retries the fetch request if there is an error.
@@ -44,7 +75,7 @@ The response passed to onSuccess is either the response data (json/text) or in t
 }
 ```
 
-## Create Request Helpers
+## Request Creator Helpers
 
 Helper functions that return a function that send a fetch request
 The promise returned by fetch is then resolved inside the `sendRequest` function.
