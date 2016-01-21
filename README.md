@@ -1,7 +1,7 @@
 # fetch-wrapper
 Wrapper around isomorphic-fetch for resending fetch request if there is an error.
 
-[![NPM](https://nodei.co/npm-dl/react-native-smart-scroll-view.png?months=3)](https://nodei.co/npm/fetch-wrapper/)
+[![NPM](https://nodei.co/npm-dl/fetch-wrapper.png?months=3)](https://nodei.co/npm/fetch-wrapper/)
 
 ## Getting Started
 
