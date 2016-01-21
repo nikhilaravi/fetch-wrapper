@@ -1,6 +1,6 @@
-export default function fetchWrapper(options, attempt=0) {
+export default function fetchWrapper(options={}, attempt=0, retryIntervals=retryIntervals) {
   const onFetchSuccess  = options.onSuccess;
-  const onFetchFail     = onFail.bind(null, options, attempt);
+  const onFetchFail     = onFail.bind(null, options, attempt, options.retryIntervals || retryIntervals);
   const onError         = handleError.bind(null, options, attempt)
 
   options.request()
@@ -9,10 +9,9 @@ export default function fetchWrapper(options, attempt=0) {
     .catch(onError) // catch errors from onSuccess or parsing data
 }
 
-const retryIntervals = [1000]; // time intervals to retry request
+const retryIntervals = [1000]; // default value of the time intervals at which to retry the request
 
 export const onFail = (options, attempt, error) => {
-  console.log("FETCH ERROR", error.message)
   if (retryIntervals[attempt]) {
     setTimeout(
       () => fetchWrapper(options, ++attempt),
@@ -37,7 +36,6 @@ export const parseResponse = (options, res) => {
 }
 
 const handleError = (options, attempt, error) => {
-  console.log("ON ERROR", error.message)
   const errorMessage = error.toString();
   if (errorMessage === 'SyntaxError: Unexpected end of input') {
     options.onSuccess({status: 'error', message: 'No response body'})  // error in res.json/res.text
