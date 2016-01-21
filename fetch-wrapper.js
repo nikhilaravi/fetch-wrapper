@@ -1,54 +1,39 @@
 export default function fetchWrapper(options, attempt=0) {
-  const onSuccess = options.onSuccess;
+  const onFetchSuccess  = options.onSuccess;
+  const onFetchFail     = onFail.bind(null, options, attempt);
+  const onFetchComplete = onComplete.bind(null, options);
+  const onError         = handleError.bind(null, options, attempt)
 
   options.request()
-    .then(onFetchComplete.bind(null, options), onFetchFail.bind(null, options, attempt)) // catch errors from fetch
-    .then(onSuccess, onError.bind(null, options, attempt))
-    .catch(onError.bind(null, options, attempt))
+    .then(onFetchComplete, onFetchFail) // catch errors from fetch request
+    .then(onFetchSuccess, onError) // catch errors from status codes or parsing data in onFetchComplete
+    .catch(onError) // catch errors from onSuccess or parsing data
 }
 
-const retryIntervals = [1000, 2000, 3000]
+//fetch request fails
 
-const onError = (options, attempt, error) => {
-  console.log("ON ERROR", error)
+//on retry request
+//random url
+// reponse timeout -
 
-  if (error.response && error.response.status) {
-    // fetch failure
-    onFetchFail(options, attempt, error)
-  } else {
-    //redux and parsing errors
-    const errorMessage = error.toString();
-    switch(errorMessage) {
-      case 'Error: Invalid Response Type':
-        return options.onError('Please specify a responseType property in the options object')
-        break;
-      default:
-        return options.onError('Error in onSuccess function')
-    }
-  }
-}
+const retryIntervals = [1000]; // time intervals to retry request
 
-export const onFetchFail = (options, attempt, error) => {
+export const onFail = (options, attempt, error) => {
+  console.log("FETCH ERROR", error.message)
   if (retryIntervals[attempt]) {
     setTimeout(
       () => fetchWrapper(options, ++attempt),
       retryIntervals[attempt]
     )
   } else {
-    // Treat network errors without responses as 500s (internal server error).
-    const status = error.response ? error.response.status : 500
-    return options.onError(status);
+    const status = error.response ? error.response.status : 500; // Treat network errors without responses as 500s (internal server error).
+    const message = error.message;
+    return options.onError(status, message);
   }
 }
 
-export const onFetchComplete = (options,res) => {
-  if (res.ok) {
-    return parseResponse(options,res);
-  } else {
-    const error = new Error(res.statusText);
-    error.response = res;
-    throw error
-  }
+export const onComplete = (options,res) => {
+  return parseResponse(options,res); // only parse the response if response has status 200
 }
 
 export const parseResponse = (options, res) => {
@@ -57,7 +42,22 @@ export const parseResponse = (options, res) => {
     return res.text();
   } else if (type == 'json') {
     return res.json();
-  } else {
+  } else if (type === undefined) {
     throw new Error('Invalid Response Type');
+  } else
+}
+
+const handleError = (options, attempt, error) => {
+  console.log("ON ERROR", error)
+
+  //400/500 error still call onSUccess with the error
+  // only call onError after retrying fetch 3 times with fail
+
+  if (error.response && error.response.status) {
+    // fetch failure, call Fetch fail function and retry request
+    onFail(options, attempt, error)
+  } else {
+    //redux or parsing error
+   return options.onError(error.toString())
   }
 }
