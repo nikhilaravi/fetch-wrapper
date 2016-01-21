@@ -143,6 +143,4 @@ sendRequest({
 ```
 
 ## Credits
-Inspiration from @danbrwstr
-
 Collaborators: @besartshyti
