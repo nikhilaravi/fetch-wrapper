@@ -2,31 +2,100 @@ import test from 'tape';
 import nock from 'nock';
 import { getReq, sendRequest } from '../index.js';
 
+//mock error object sent from own server
 const err = {
   status: 'error',
   message: 'Sorry there was a problem'
 };
 
-test('fetch-wrapper => 404 error after 4 attempts (3 retry intervals)', t => {
+/**
+options.onError will only be called if there is an:
+- error in the fetch request
+- error in options.onSuccess function (e.g. redux error)
+**/
 
-  nock('http://localhost:8000')
-    .get('/')
-    .times(4)
-    .reply(404)
+test('fetch-wrapper:options.onError => fetch request error calls onError with 500 status code ', t => {
 
   sendRequest({
-    request: getReq('http://localhost:8000/'),
+    request: getReq('http://ghghjhjkhjhskjhdfkhs.com'),
     responseType: 'json',
     onSuccess: () => {},
-    onError: error => {
-      t.equal(error, 404);
+    onError: (error) => {
+      //status codes sent in error objects to onError function
+      t.equal(error.status, 'error');
       t.end()
+    },
+  });
+
+});
+
+test('fetch-wrapper:options.onError => error in response', t => {
+
+  nock('http://localhost:8000')
+    .get('/test')
+    .times(2)
+    .replyWithError(err)
+
+  sendRequest({
+    request: getReq('http://localhost:8000/test'),
+    responseType: 'json',
+    onSuccess: () => {},
+    onError: (error) => {
+      t.equal(error.status, 'error');
+      t.end();
     }
   });
 
 });
 
-test('fetch-wrapper => 200 success', t => {
+
+test('fetch-wrapper:options.onError => Error in options.onSuccess handler', t => {
+
+  nock('http://localhost:8000')
+    .get('/')
+    .reply(200, {name: 'name'})
+
+  sendRequest({
+    request: getReq('http://localhost:8000/'),
+    responseType: 'json',
+    onSuccess: (res) => {
+      throw new Error("Error in onSuccess function")
+    },
+    onError: error => {
+      t.equal(error.message, 'Error: Error in onSuccess function');
+      t.end();
+    }
+  });
+
+});
+
+
+/**
+options.onSuccess will be called on
+- successful requests
+- network errors e.g. 404/
+**/
+
+test('fetch-wrapper:options.onSuccess => 404 error calls onSuccess after 1 attempt', t => {
+
+  nock('http://localhost:8000')
+    .get('/')
+    .times(1)
+    .reply(404, err)
+
+  sendRequest({
+    request: getReq('http://localhost:8000/'),
+    responseType: 'json',
+    onSuccess: (json) => {
+      t.deepEqual(json, err);
+      t.end()
+    },
+    onError: () => {}
+  });
+
+});
+
+test('fetch-wrapper:options.onSuccess => 200 success after 1 attempt', t => {
 
   nock('http://localhost:8000')
     .get('/login')
@@ -45,7 +114,7 @@ test('fetch-wrapper => 200 success', t => {
 
 });
 
-test('fetch-wrapper => 500 server error', t => {
+test('fetch-wrapper:options.onSuccess => 500 server error, no error object in response', t => {
 
   nock('http://localhost:8000')
     .get('/login')
@@ -55,54 +124,35 @@ test('fetch-wrapper => 500 server error', t => {
   sendRequest({
     request: getReq('http://localhost:8000/login'),
     responseType: 'json',
-    onSuccess: () => {},
-    onError: (error) => {
-      t.equal(error, 500);
-      t.end();
-    }
-  });
-
-});
-
-test('fetch-wrapper => reply error', t => {
-
-  nock('http://localhost:8000')
-    .get('/login')
-    .times(4)
-    .replyWithError(err)
-
-  sendRequest({
-    request: getReq('http://localhost:8000/login'),
-    responseType: 'json',
-    onSuccess: () => {},
-    onError: (error) => {
-      console.log("REPLY ERROR", error)
-      t.equal(error, 500);
-      t.end();
-    }
-  });
-
-});
-
-test('fetch-wrapper => 200 success on third request attempt', t => {
-
-  nock('http://localhost:8000').get('/ok').once().reply(400);
-  nock('http://localhost:8000').get('/ok').twice().reply(400);
-  nock('http://localhost:8000').get('/ok').thrice().reply(200, 'ok');
-
-  sendRequest({
-    request: getReq('http://localhost:8000/ok'),
-    responseType: 'text',
-    onSuccess: res => {
-      t.equal(res, 'ok');
-      t.end();
+    onSuccess: (json) => {
+      t.deepEqual(json, {status: 'error', message: 'No response body'});
+      t.end()
     },
     onError: () => {}
   });
 
 });
 
-test('fetch-wrapper => Parse data Error: no response type', t => {
+test('fetch-wrapper:options.onSuccess => 500 server error, error object in response', t => {
+
+  nock('http://localhost:8000')
+    .get('/server')
+    .times(1)
+    .reply(500, err)
+
+  sendRequest({
+    request: getReq('http://localhost:8000/server'),
+    responseType: 'json',
+    onSuccess: (json) => {
+      t.deepEqual(json, err);
+      t.end()
+    },
+    onError: () => {}
+  });
+
+});
+
+test('fetch-wrapper:options.onSuccess => Parse data Error: no response type', t => {
 
   nock('http://localhost:8000')
     .get('/')
@@ -111,31 +161,31 @@ test('fetch-wrapper => Parse data Error: no response type', t => {
 
   sendRequest({
     request: getReq('http://localhost:8000/'),
-    onSuccess: () => {},
-    onError: error => {
-      t.equal(error, 'Please specify a responseType property in the options object');
+    onSuccess: json => {
+      t.deepEqual(json, {status: 'error', message: 'Invalid Response Type'});
       t.end();
-    }
+    },
+    onError: () => {}
   });
 
 });
 
-test('fetch-wrapper => Error in options.onSuccess handler', t => {
+test('fetch-wrapper:options.onSuccess => Parse data Error: invalid response type', t => {
 
   nock('http://localhost:8000')
     .get('/')
+    .times(1)
     .reply(200, {name: 'name'})
 
   sendRequest({
     request: getReq('http://localhost:8000/'),
-    responseType: 'json',
-    onSuccess: (res) => {
-      throw new Error("on success error")
-    },
-    onError: error => {
-      t.equal(error, 'Error in onSuccess function');
+    responseType: 'form',
+    onSuccess: () => {},
+    onSuccess: json => {
+      t.deepEqual(json, {status: 'error', message: 'Invalid Response Type'});
       t.end();
-    }
+    },
+    onError: () => {}
   });
 
 });
