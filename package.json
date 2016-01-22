@@ -1,8 +1,8 @@
 {
   "name": "fetch-wrapper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Wrapper around isomorphic-fetch to retry the request if there is an error",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "tape test/runner.js",
     "compile": "babel -d lib/ src/",
